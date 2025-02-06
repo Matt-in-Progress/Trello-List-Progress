@@ -12,12 +12,14 @@ TrelloPowerUp.initialize({
   "list-sorters": function (t, options) {
     return [
       {
-        text: "Progress",
+        text: "Sort by Progress",
         callback: function (t, opts) {
           return t.board("all").then((board) => {
             let lists = board.lists;
             let sortedLists = lists.sort((a, b) => {
-              return a.cards.length - b.cards.length;
+              let aDone = a.cards.filter((card) => t.get(card.id, "shared", "done", false)).length;
+              let bDone = b.cards.filter((card) => t.get(card.id, "shared", "done", false)).length;
+              return bDone - aDone; // Sort by most completed tasks
             });
             return { sortedLists };
           });
@@ -25,27 +27,22 @@ TrelloPowerUp.initialize({
       },
     ];
   },
-  "list-header-buttons": function (t, options) {
-    return t.list("all").then((list) => {
-      return t.cards("all").then((cards) => {
-        let totalTasks = cards.length;
-        let doneTasks = cards.filter((card) =>
-          t.get(card.id, "shared", "done", false)
-        ).length;
-        let progress = totalTasks ? (doneTasks / totalTasks) * 100 : 0;
-
-        return [
-          {
-            icon: "https://image-url.com/progress-icon.png",
-            text: `${doneTasks}/${totalTasks} tasks complete` +
-              ` (${Math.round(progress)}%)`,
-            callback: function (t) {
-              t.alert({ message: "List progress updated!" });
-            },
-          },
-        ];
-      });
-    });
+  "list-actions": function (t, options) {
+    return [{
+      text: "Show Progress",
+      callback: function (t) {
+        return t.list("all").then((list) => {
+          return t.cards("all").then((cards) => {
+            let totalTasks = cards.length;
+            let doneTasks = cards.filter((card) =>
+              t.get(card.id, "shared", "done", false)
+            ).length;
+            let progressMessage = `${doneTasks}/${totalTasks} tasks complete`;
+            t.alert({ message: progressMessage });
+          });
+        });
+      },
+    }];
   },
 });
 
