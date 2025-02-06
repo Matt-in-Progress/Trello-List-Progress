@@ -1,14 +1,30 @@
 const TrelloPowerUp = window.TrelloPowerUp;
 
 // Trello capabilities
+
 TrelloPowerUp.initialize({
-  "card-badges": function (t, options) {
-    return t.get("card", "shared", "done", false).then((isDone) => {
-      return isDone
-        ? [{ text: "✅ Done", color: "green" }]
-        : [];
-    });
+  "card-buttons": function (t, options) {
+    console.log("✅ Trello Power-Up: Loading card buttons..."); // Debug message
+    return [
+      {
+        icon: "https://image-url.com/done-icon.png",
+        text: "Mark as Done",
+        callback: function (t) {
+          console.log("✅ Trello Power-Up: Mark as Done clicked!"); // Debug message
+          return t.get("card", "shared", "done", false).then((isDone) => {
+            return t.set("card", "shared", "done", !isDone).then(() => {
+              t.alert({
+                message: isDone ? "Marked as Not Done" : "Marked as Done",
+              });
+              console.log("✅ Trello Power-Up: Card status updated.");
+            });
+          });
+        },
+      },
+    ];
   },
+});
+
   "list-sorters": function (t, options) {
     return [
       {
@@ -27,6 +43,7 @@ TrelloPowerUp.initialize({
       },
     ];
   },
+
   "list-actions": function (t, options) {
     return [{
       text: "Show Progress",
